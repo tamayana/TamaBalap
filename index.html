@@ -3,153 +3,109 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>TamaBalap 3D - Pontianak</title>
-<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
+<title>TamaBalap CarX Settings</title>
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js"}}</script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
-body{background:#0a0e14;overflow:hidden;color:#fff;touch-action:none}
-#lobby{position:absolute;inset:0;z-index:10;background:radial-gradient(circle at center,#1a2a40 0%,#060a0f 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
-#lobby h1{font-size:42px;letter-spacing:4px;text-shadow:0 0 20px #00f2ff;margin-bottom:5px}
-#lobby p{opacity:.6;margin-bottom:30px}
-.arenas{display:grid;grid-template-columns:1fr;gap:16px;width:100%;max-width:400px}
-.arena-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:18px;padding:16px;display:flex;gap:14px;align-items:center;cursor:pointer;transition:.2s;backdrop-filter:blur(10px)}
-.arena-card:active{transform:scale(.97);background:rgba(0,242,255,.15);border-color:#00f2ff}
-.arena-card img{width:78px;height:58px;border-radius:10px;object-fit:cover;background:#222}
-.arena-info h3{font-size:16px;margin-bottom:2px}
-.arena-info span{font-size:12px;opacity:.7}
-.badge{margin-left:auto;background:#00f2ff;color:#000;font-size:10px;font-weight:800;padding:4px 8px;border-radius:20px}
-#hud{position:absolute;top:0;left:0;right:0;padding:12px 14px;display:flex;justify-content:space-between;z-index:5;pointer-events:none}
-.hud-box{background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.15);padding:8px 14px;border-radius:12px;font-size:13px;backdrop-filter:blur(8px)}
-#controls{position:absolute;bottom:0;left:0;right:0;padding:16px;display:none;justify-content:space-between;z-index:5}
-.ctrl{width:78px;height:78px;border-radius:50%;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;backdrop-filter:blur(6px);user-select:none}
-.ctrl:active{background:rgba(0,242,255,.3)}
-#steer{position:absolute;bottom:110px;left:0;right:0;display:none;justify-content:space-between;padding:0 20px;z-index:5}
-.s{width:70px;height:70px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:22px}
-#nitroBar{position:absolute;top:68px;right:14px;width:140px;height:8px;background:rgba(255,255,255,.15);border-radius:10px;overflow:hidden;z-index:5}
-#nitroFill{height:100%;width:100%;background:linear-gradient(90deg,#00f2ff,#7000ff);transition:width .1s}
-#back{position:absolute;top:14px;left:14px;z-index:6;display:none;background:rgba(0,0,0,.6);border:1px solid #fff;padding:8px 14px;border-radius:10px}
+*{margin:0;padding:0;box-sizing:border-box;touch-action:none;user-select:none}
+body{background:#000;overflow:hidden;font-family:'Segoe UI',Arial}
+#lobby{position:absolute;inset:0;z-index:30;background:url('https://images.unsplash.com/photo-1449824913935-59a10b8d2000?w=900') center/cover;display:flex;flex-direction:column}
+#lobby::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,15,30,.82),rgba(0,0,0,.96))}
+#lobbyContent{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px}
+#lobby h1{font-size:50px;font-weight:900;color:#fff}
+#lobby h1 span{color:#00ffff}
+.topBar{position:absolute;top:12px;left:12px;right:12px;z-index:3;display:flex;justify-content:space-between}
+.iconBtn{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px}
+.btnArena{width:100%;max-width:380px;background:rgba(255,255,255,.08);border-left:4px solid #ff00ff;border-radius:14px;padding:14px 16px;margin:7px 0;display:flex;justify-content:space-between;align-items:center;color:#fff}
+#settingsModal{position:absolute;inset:0;z-index:40;background:rgba(5,8,15,.96);display:none;flex-direction:column;overflow-y:auto}
+#settingsHeader{padding:14px 16px;display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.1);position:sticky;top:0}
+#settingsBody{padding:16px}
+.section{margin-bottom:22px}
+.section h3{color:#00ffff;font-size:12px;letter-spacing:2px;margin-bottom:12px}
+.row{display:flex;justify-content:space-between;align-items:center;background:rgba(255,255,255,.05);border-radius:12px;padding:12px 14px;margin-bottom:8px}
+.row label{color:#fff;font-size:13px}
+input[type=range]{width:100%;margin-top:8px;accent-color:#ff00ff}
+.toggle{width:44px;height:26px;background:#333;border-radius:20px;position:relative}
+.toggle.on{background:#ff00ff}
+.toggle::after{content:'';position:absolute;width:20px;height:20px;background:#fff;border-radius:50%;top:3px;left:3px;transition:.2s}
+.toggle.on::after{left:21px}
+.btnSmall{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:#fff;padding:6px 12px;border-radius:8px;font-size:11px}
+.btnSmall.active{background:#00ffff;color:#000}
+#gameUI{position:absolute;inset:0;z-index:10;display:none;pointer-events:none}
+#controlsLayer{position:absolute;bottom:0;left:0;right:0;height:40%;display:flex;justify-content:space-between;align-items:flex-end;padding:12px 16px;pointer-events:auto}
+#steerWheel{width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.18);display:flex;align-items:center;justify-content:center}
+#steerInner{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:28px;color:rgba(255,255,255,.55)}
+.pedals{display:flex;gap:14px}
+.pedal{width:84px;height:120px;border-radius:18px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);display:flex;flex-direction:column;align-items:center;justify-content:center;color:rgba(255,255,255,.45);font-size:26px}
+#back{position:absolute;top:8px;left:8px;z-index:20;display:none;background:rgba(0,0,0,.6);color:#fff;border:1px solid #fff;padding:6px 10px;border-radius:8px;font-size:11px;pointer-events:auto}
 </style>
 </head>
 <body>
 <div id="lobby">
-<h1>TAMABALAP</h1>
-<p>PONTIANAK 3D DRIFT • PILIH ARENA</p>
-<div class="arenas">
-<div class="arena-card" data-arena="kapuas"><img src="https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=200"><div class="arena-info"><h3>ARENA A: JEMBATAN KAPUAS</h3><span>Sungai • Jembatan Panjang • 3.2KM</span></div><div class="badge">DRIFT</div></div>
-<div class="arena-card" data-arena="khatulistiwa"><img src="https://images.unsplash.com/photo-1519817650390-64a93db51149?w=200"><div class="arena-info"><h3>ARENA B: TUGU KHATULISTIWA</h3><span>Equator 0° • Lingkaran • Speed</span></div><div class="badge">SPEED</div></div>
-<div class="arena-card" data-arena="ayani"><img src="https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=200"><div class="arena-info"><h3>ARENA C: A. YANI NIGHT</h3><span>Pasar • Masjid Raya • Technical</span></div><div class="badge">NIGHT</div></div>
+<div class="topBar"><div class="iconBtn" id="btnSettings">⚙️</div><div class="iconBtn">🚗</div></div>
+<div id="lobbyContent">
+<h1>TAMA<span>BALAP</span></h1>
+<p style="color:#aaa;font-size:11px;letter-spacing:3px;margin-bottom:22px">PONTIANAK CARX EDITION • SETTINGS</p>
+<div style="width:100%;max-width:390px">
+<div class="btnArena" data-a="kapuas"><div><h3>ARENA A • JEMBATAN KAPUAS</h3><p style="font-size:11px;opacity:.6">2.8 KM Bridge</p></div><div style="background:#ff00ff;padding:4px 10px;border-radius:20px;font-size:10px">DRIFT</div></div>
+<div class="btnArena" data-a="khatulistiwa"><div><h3>ARENA B • TUGU KHATULISTIWA</h3><p style="font-size:11px;opacity:.6">Equator Ring</p></div><div style="background:#00ffff;color:#000;padding:4px 10px;border-radius:20px;font-size:10px">SPEED</div></div>
+<div class="btnArena" data-a="city"><div><h3>ARENA C • A.YANI TUNNEL</h3><p style="font-size:11px;opacity:.6">Suburb Tunnel CarX</p></div><div style="background:#a0ff00;color:#000;padding:4px 10px;border-radius:20px;font-size:10px">NIGHT</div></div>
+</div>
+<p style="color:#555;font-size:10px;margin-top:16px">Tap ⚙️ untuk atur stir</p>
 </div>
 </div>
-<div id="hud"><div class="hud-box"><div id="speed">0 KM/H</div><div id="lap">LAP 1/3</div></div><div class="hud-box"><div>ARENA: <span id="arenaName">-</span></div><div>NITRO: <span id="nitroTxt">100%</span></div></div></div>
-<div id="nitroBar"><div id="nitroFill"></div></div>
-<button id="back">← LOBBY</button>
-<div id="steer"><div class="s" id="leftBtn">◀</div><div class="s" id="rightBtn">▶</div></div>
-<div id="controls"><div class="ctrl" id="brakeBtn">BRAKE</div><div class="ctrl" id="gasBtn">GAS</div><div class="ctrl" id="nitroBtn" style="border-color:#00f2ff;color:#00f2ff">NITRO</div></div>
+<div id="settingsModal">
+<div id="settingsHeader"><h2 style="color:#fff;font-size:16px">⚙️ PENGATURAN KONTROL</h2><div class="iconBtn" id="closeSettings">✕</div></div>
+<div id="settingsBody">
+<div class="section"><h3>STIR / STEERING</h3>
+<div class="row" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><label>Sensitivitas Stir</label><span id="vSteerSens">1.8</span></div><input type="range" id="steerSens" min="0.5" max="3.5" step="0.1" value="1.8"></div>
+<div class="row" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><label>Balik Stir</label><span id="vCenter">0.92</span></div><input type="range" id="centerSpeed" min="0.8" max="0.99" step="0.01" value="0.92"></div>
+<div class="row"><label>Invert Stir</label><div class="toggle" id="togInvert"></div></div>
+<div class="row"><label>Ukuran Stir</label><div style="display:flex;gap:6px"><button class="btnSmall" data-size="100">Kecil</button><button class="btnSmall active" data-size="130">Normal</button><button class="btnSmall" data-size="160">Besar</button></div></div>
+</div>
+<div class="section"><h3>GAS & REM</h3>
+<div class="row" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><label>Gas</label><span id="vGas">35</span></div><input type="range" id="gasSens" min="15" max="60" step="1" value="35"></div>
+<div class="row" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><label>Rem</label><span id="vBrake">40</span></div><input type="range" id="brakeSens" min="15" max="70" step="1" value="40"></div>
+<div class="row"><label>Tukar Gas-Rem</label><div class="toggle" id="togSwap"></div></div>
+</div>
+<div class="section"><h3>LAYOUT & KAMERA</h3>
+<div class="row"><label>Posisi Stir</label><div style="display:flex;gap:6px"><button class="btnSmall active" data-pos="left">Kiri</button><button class="btnSmall" data-pos="right">Kanan</button></div></div>
+<div class="row" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><label>Jarak Kamera</label><span id="vCam">9</span></div><input type="range" id="camDist" min="5" max="16" step="0.5" value="9"></div>
+<div class="row" style="flex-direction:column;align-items:stretch"><div style="display:flex;justify-content:space-between"><label>Tinggi Kamera</label><span id="vCamH">3.2</span></div><input type="range" id="camH" min="1.5" max="6" step="0.1" value="3.2"></div>
+<div class="row"><label>Edit Posisi Tombol</label><button class="btnSmall" id="btnEditPos">EDIT POSISI</button></div>
+</div>
+<div class="section"><div class="row"><label>Reset Default</label><button class="btnSmall" id="btnReset" style="background:#ff0044;color:#fff">RESET</button></div></div>
+</div>
+</div>
+<button id="back">II LOBBY</button>
+<div id="gameUI">
+<div id="controlsLayer">
+<div id="steerWrap"><div id="steerWheel"><div id="steerInner">◐</div></div></div>
+<div class="pedals" id="pedalsWrap"><div class="pedal" id="pedalBrake">▼<span style="font-size:10px">REM</span></div><div class="pedal" id="pedalGas">▲<span style="font-size:10px">GAS</span></div></div>
+</div>
+</div>
 <script type="module">
 import * as THREE from 'three';
-let scene,camera,renderer,car,ground,clock;
-let arenaType='kapuas',playing=false;
-let speed=0,maxSpeed=28,angle=0,nitro=100,lap=1,drift=0;
-let keys={l:false,r:false,g:false,b:false,n:false};
-let checkpoints=[],nextCp=0;
-const lobby=document.getElementById('lobby');
-const controls=document.getElementById('controls');
-const steer=document.getElementById('steer');
-const back=document.getElementById('back');
-function initThree(){
- scene=new THREE.Scene();
- camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,0.1,1000);
- renderer=new THREE.WebGLRenderer({antialias:true});
- renderer.setSize(innerWidth,innerHeight);
- renderer.shadowMap.enabled=true;
- document.body.appendChild(renderer.domElement);
- clock=new THREE.Clock();
- scene.fog=new THREE.Fog(0x0a0e14,40,120);
- const amb=new THREE.AmbientLight(0xffffff,0.6); scene.add(amb);
- const sun=new THREE.DirectionalLight(0xffffff,1.2); sun.position.set(20,40,20); sun.castShadow=true; scene.add(sun);
- const carGeo=new THREE.BoxGeometry(1.8,0.8,3.5);
- const carMat=new THREE.MeshStandardMaterial({color:0x2b8cff,metalness:0.7,roughness:0.2,emissive:0x001133});
- car=new THREE.Mesh(carGeo,carMat); car.castShadow=true;
- const cabin=new THREE.Mesh(new THREE.BoxGeometry(1.6,0.6,1.8), new THREE.MeshStandardMaterial({color:0x111111}));
- cabin.position.y=0.6; car.add(cabin); scene.add(car);
- camera.position.set(0,10,-12); camera.lookAt(car.position);
- setupInput(); animate();
-}
-function createArena(type){
- const toRemove=[]; scene.traverse(o=>{if(o.userData.track)toRemove.push(o)}); toRemove.forEach(o=>scene.remove(o));
- checkpoints=[];
- if(type==='kapuas'){
-   scene.background=new THREE.Color(0x1a3a5a);
-   ground=new THREE.Mesh(new THREE.PlaneGeometry(400,400), new THREE.MeshStandardMaterial({color:0x143a6a}));
-   ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; ground.userData.track=true; scene.add(ground);
-   const river=new THREE.Mesh(new THREE.PlaneGeometry(400,40), new THREE.MeshStandardMaterial({color:0x0a4a8a}));
-   river.rotation.x=-Math.PI/2; river.position.y=0.05; river.userData.track=true; scene.add(river);
-   for(let i=0;i<30;i++){
-     const seg=new THREE.Mesh(new THREE.BoxGeometry(12,0.5,8), new THREE.MeshStandardMaterial({color:i%2?0x333333:0xaaaaaa}));
-     seg.position.set(0,0.6,(i-15)*8); seg.receiveShadow=true; seg.userData.track=true; scene.add(seg);
-     if(i%5===0) checkpoints.push(new THREE.Vector3(0,0.6,(i-15)*8));
-   }
- } else if(type==='khatulistiwa'){
-   scene.background=new THREE.Color(0x2a3a1a);
-   ground=new THREE.Mesh(new THREE.PlaneGeometry(400,400), new THREE.MeshStandardMaterial({color:0x2a4a1a}));
-   ground.rotation.x=-Math.PI/2; ground.userData.track=true; scene.add(ground);
-   for(let i=0;i<32;i++){
-     const ang=i/32*Math.PI*2; const x=Math.cos(ang)*30, z=Math.sin(ang)*30;
-     const seg=new THREE.Mesh(new THREE.BoxGeometry(10,0.5,4), new THREE.MeshStandardMaterial({color:0xccaa66}));
-     seg.position.set(x,0.5,z); seg.lookAt(0,0.5,0); seg.userData.track=true; scene.add(seg);
-     checkpoints.push(new THREE.Vector3(x,0.5,z));
-   }
-   const tugu=new THREE.Mesh(new THREE.CylinderGeometry(1,2,8,6), new THREE.MeshStandardMaterial({color:0xffffff}));
-   tugu.position.set(0,4,0); tugu.userData.track=true; scene.add(tugu);
- } else {
-   scene.background=new THREE.Color(0x0f0a1a);
-   ground=new THREE.Mesh(new THREE.PlaneGeometry(400,400), new THREE.MeshStandardMaterial({color:0x1a1a2a}));
-   ground.rotation.x=-Math.PI/2; ground.userData.track=true; scene.add(ground);
-   const path=[ [0,0],[20,0],[20,20],[0,20],[-15,10],[0,0] ];
-   path.forEach((p)=>{
-     const seg=new THREE.Mesh(new THREE.BoxGeometry(10,0.4,10), new THREE.MeshStandardMaterial({color:0x444444,emissive:0x111111}));
-     seg.position.set(p[0],0.3,p[1]); seg.userData.track=true; scene.add(seg);
-     checkpoints.push(new THREE.Vector3(p[0],0.3,p[1]));
-     const b=new THREE.Mesh(new THREE.BoxGeometry(4,8,4), new THREE.MeshStandardMaterial({color:0x222233}));
-     b.position.set(p[0]+8,4,p[1]+5); b.userData.track=true; scene.add(b);
-   });
- }
- car.position.set(checkpoints[0]?.x||0,1.5,checkpoints[0]?.z||0);
- speed=0; angle=0; car.rotation.y=0; nextCp=1; lap=1;
-}
-function setupInput(){
- const bind=(el,k)=>{el.addEventListener('touchstart',e=>{e.preventDefault(); keys[k]=true}); el.addEventListener('touchend',e=>{keys[k]=false}); el.addEventListener('mousedown',()=>keys[k]=true); el.addEventListener('mouseup',()=>keys[k]=false);};
- bind(document.getElementById('leftBtn'),'l'); bind(document.getElementById('rightBtn'),'r'); bind(document.getElementById('gasBtn'),'g'); bind(document.getElementById('brakeBtn'),'b'); bind(document.getElementById('nitroBtn'),'n');
- window.addEventListener('keydown',e=>{if(e.key==='a'||e.key==='ArrowLeft')keys.l=true; if(e.key==='d'||e.key==='ArrowRight')keys.r=true; if(e.key==='w'||e.key==='ArrowUp')keys.g=true; if(e.key==='s'||e.key===' ')keys.b=true; if(e.key==='Shift')keys.n=true;});
- window.addEventListener('keyup',e=>{if(e.key==='a'||e.key==='ArrowLeft')keys.l=false; if(e.key==='d'||e.key==='ArrowRight')keys.r=false; if(e.key==='w'||e.key==='ArrowUp')keys.g=false; if(e.key==='s'||e.key===' ')keys.b=false; if(e.key==='Shift')keys.n=false;});
-}
-function update(dt){
- if(!playing) return;
- let accel=0; if(keys.g) accel+=18*dt; if(keys.n && nitro>0){accel+=28*dt; nitro-=35*dt; maxSpeed=42}else{maxSpeed=28; if(nitro<100)nitro+=10*dt}
- if(keys.b){speed-=20*dt; if(speed<0)speed=0}
- speed+=accel; speed-=speed*0.8*dt; if(speed<0)speed=0; if(speed>maxSpeed)speed=maxSpeed;
- let steerFactor=2.2+(speed/maxSpeed)*1.5; if(keys.b && speed>5) steerFactor+=2.5;
- if(keys.l) angle+=steerFactor*dt; if(keys.r) angle-=steerFactor*dt;
- const move=speed*dt; car.position.x+=Math.sin(angle)*move; car.position.z+=Math.cos(angle)*move; car.rotation.y=angle;
- drift=(keys.l?-1:keys.r?1:0)*(speed/10); car.rotation.z=-drift*0.4; car.rotation.x=(speed/maxSpeed)*0.15;
- if(checkpoints[nextCp]){const d=car.position.distanceTo(checkpoints[nextCp]); if(d<8){nextCp++; if(nextCp>=checkpoints.length){nextCp=0; lap++;}}}
- const camTarget=new THREE.Vector3(car.position.x-Math.sin(angle)*12, car.position.y+6, car.position.z-Math.cos(angle)*12);
- camera.position.lerp(camTarget,4*dt); camera.lookAt(car.position);
- document.getElementById('speed').innerText=Math.floor(speed*12)+' KM/H';
- document.getElementById('lap').innerText='LAP '+lap+'/3';
- document.getElementById('nitroTxt').innerText=Math.floor(nitro)+'%';
- document.getElementById('nitroFill').style.width=nitro+'%';
-}
+let scene,camera,renderer,car,clock,playing=false,editingPos=false;
+let speed=0,angle=0,steerInput=0,driftScore=0;
+let keys={gas:false,brake:false},wheels=[],track=[],smoke=[];
+let settings={steerSens:1.8,centerSpeed:0.92,invert:0,steerSize:130,gasSens:35,brakeSens:40,swap:0,steerPos:'left',camDist:9,camH:3.2,steerX:16,steerY:12,pedalsX:16,pedalsY:12};
+try{const s=localStorage.getItem('tb_settings'); if(s) settings={...settings,...JSON.parse(s)};}catch(e){}
+function save(){localStorage.setItem('tb_settings',JSON.stringify(settings));}
+function init(){scene=new THREE.Scene(); camera=new THREE.PerspectiveCamera(68,innerWidth/innerHeight,0.1,500); renderer=new THREE.WebGLRenderer({antialias:true}); renderer.setSize(innerWidth,innerHeight); document.body.appendChild(renderer.domElement); clock=new THREE.Clock(); scene.add(new THREE.AmbientLight(0xffffff,0.8)); const sun=new THREE.DirectionalLight(0xffffff,1); sun.position.set(20,40,10); sun.castShadow=true; scene.add(sun); buildCar(); applySettings(); animate();}
+function buildCar(){car=new THREE.Group(); const body=new THREE.Mesh(new THREE.BoxGeometry(2,0.65,4.3),new THREE.MeshStandardMaterial({color:0x9b1eff,metalness:0.8})); body.position.y=0.8; car.add(body); const roof=new THREE.Mesh(new THREE.BoxGeometry(1.7,0.55,2.1),new THREE.MeshStandardMaterial({color:0x111})); roof.position.set(0,1.4,-0.15); car.add(roof); const wGeo=new THREE.CylinderGeometry(0.42,0.42,0.45,14),wMat=new THREE.MeshStandardMaterial({color:0xffd700}); [[-1.05,0.42,1.35],[1.05,0.42,1.35],[-1.05,0.42,-1.35],[1.05,0.42,-1.35]].forEach(p=>{const w=new THREE.Mesh(wGeo,wMat); w.rotation.z=Math.PI/2; w.position.set(p[0],p[1],p[2]); car.add(w); wheels.push(w);}); scene.add(car);}
+function clearTrack(){const rm=[]; scene.traverse(o=>{if(o.userData.t) rm.push(o)}); rm.forEach(o=>scene.remove(o)); track=[];}
+function road(pos,w,h){const m=new THREE.Mesh(new THREE.BoxGeometry(w,0.3,h),new THREE.MeshStandardMaterial({color:0x2e2e2e})); m.position.copy(pos); m.position.y=0.15; m.userData.t=true; scene.add(m); return m;}
+function createArena(type){clearTrack(); if(type==='city'){scene.background=new THREE.Color(0x7a7a7a); for(let i=0;i<80;i++){const z=(i-40)*6; road(new THREE.Vector3(0,0,z),18,6); if(i%4===0) track.push(new THREE.Vector3(0,0.5,z));}} else if(type==='kapuas'){scene.background=new THREE.Color(0x5dade2); for(let i=0;i<60;i++){const z=(i-30)*6; road(new THREE.Vector3(0,0,z),14,6); if(i%3===0) track.push(new THREE.Vector3(0,0.5,z));}} else {scene.background=new THREE.Color(0xa3d977); const R=30; for(let i=0;i<60;i++){const a=i/60*Math.PI*2; const x=Math.cos(a)*R,z=Math.sin(a)*R; const seg=road(new THREE.Vector3(x,0,z),10,5.5); seg.rotation.y=-a; track.push(new THREE.Vector3(x,0.5,z));}} car.position.copy(track[0]||new THREE.Vector3(0,0.8,0)); car.position.y=0.8; speed=0; angle=0;}
+function applySettings(){document.getElementById('steerWrap').style.width=settings.steerSize+'px'; document.getElementById('steerWrap').style.height=settings.steerSize+'px'; document.getElementById('steerWheel').style.width=settings.steerSize+'px'; document.getElementById('steerWheel').style.height=settings.steerSize+'px'; const layer=document.getElementById('controlsLayer'); layer.style.flexDirection=settings.steerPos==='right'?'row-reverse':'row'; document.getElementById('pedalsWrap').style.flexDirection=settings.swap?'row-reverse':'row';}
+function setupControls(){const steerEl=document.getElementById('steerWheel'); let dragging=false,centerX=0,startAng=0; function getAng(e){const rect=steerEl.getBoundingClientRect(); const cx=rect.left+rect.width/2,cy=rect.top+rect.height/2; const x=(e.touches?e.touches[0].clientX:e.clientX)-cx,y=(e.touches?e.touches[0].clientY:e.clientY)-cy; return Math.atan2(y,x);} steerEl.addEventListener('touchstart',e=>{if(editingPos) return; dragging=true; centerX=getAng(e); startAng=steerInput; e.preventDefault();}); window.addEventListener('touchmove',e=>{if(!dragging||editingPos) return; const ang=getAng(e); let diff=ang-centerX; if(diff>Math.PI) diff-=Math.PI*2; if(diff<-Math.PI) diff+=Math.PI*2; let val=startAng+diff*settings.steerSens; val=Math.max(-1,Math.min(1,val)); if(settings.invert) val=-val; steerInput=val; document.getElementById('steerInner').style.transform='rotate('+(steerInput*200)+'deg)'; e.preventDefault();},{passive:false}); window.addEventListener('touchend',()=>{dragging=false}); setInterval(()=>{if(!dragging&&!editingPos){steerInput*=settings.centerSpeed; document.getElementById('steerInner').style.transform='rotate('+(steerInput*200)+'deg)';}},16); const gas=document.getElementById('pedalGas'),brake=document.getElementById('pedalBrake'); const bind=(el,key)=>{el.addEventListener('touchstart',e=>{if(editingPos) return; e.preventDefault(); keys[key]=true;}); el.addEventListener('touchend',()=>{keys[key]=false;}); el.addEventListener('mousedown',()=>{if(editingPos) return; keys[key]=true;}); el.addEventListener('mouseup',()=>{keys[key]=false;});}; bind(gas,'gas'); bind(brake,'brake');}
+function update(dt){if(!playing||editingPos) return; let accel=0; if(keys.gas) accel+=settings.gasSens*dt; if(keys.brake) speed-=settings.brakeSens*dt; speed+=accel; speed-=speed*0.5*dt; if(speed<0) speed=0; if(speed>70) speed=70; angle+=steerInput*(0.9+speed/70*1.4)*dt*1.8; const mv=speed*dt; car.position.x+=Math.sin(angle)*mv; car.position.z+=Math.cos(angle)*mv; car.rotation.y=angle; const camPos=new THREE.Vector3(car.position.x-Math.sin(angle)*settings.camDist,car.position.y+settings.camH,car.position.z-Math.cos(angle)*settings.camDist); camera.position.lerp(camPos,6*dt); camera.lookAt(car.position.clone().add(new THREE.Vector3(0,0.8,0))); }
 function animate(){requestAnimationFrame(animate); const dt=Math.min(clock.getDelta(),0.05); update(dt); renderer.render(scene,camera);}
-document.querySelectorAll('.arena-card').forEach(card=>{
- card.addEventListener('click',()=>{
-   arenaType=card.dataset.arena;
-   document.getElementById('arenaName').innerText=arenaType.toUpperCase();
-   lobby.style.display='none'; controls.style.display='flex'; steer.style.display='flex'; back.style.display='block'; playing=true;
-   if(!scene) initThree(); createArena(arenaType);
- });
-});
-back.onclick=()=>{playing=false; lobby.style.display='flex'; controls.style.display='none'; steer.style.display='none'; back.style.display='none'};
+document.querySelectorAll('.btnArena').forEach(b=>{b.addEventListener('click',()=>{document.getElementById('lobby').style.display='none'; document.getElementById('gameUI').style.display='block'; document.getElementById('back').style.display='block'; playing=true; if(!scene){init(); setupControls();} createArena(b.dataset.a);});});
+document.getElementById('back').onclick=()=>{playing=false; document.getElementById('lobby').style.display='flex'; document.getElementById('gameUI').style.display='none'; document.getElementById('back').style.display='none';};
+document.getElementById('btnSettings').onclick=()=>{document.getElementById('settingsModal').style.display='flex'; if(!scene){init(); setupControls();}};
+document.getElementById('closeSettings').onclick=()=>{document.getElementById('settingsModal').style.display='none';};
+function setupSettings(){const $=id=>document.getElementById(id); $('steerSens').addEventListener('input',e=>{settings.steerSens=parseFloat(e.target.value); $('vSteerSens').innerText=settings.steerSens; save();}); $('centerSpeed').addEventListener('input',e=>{settings.centerSpeed=parseFloat(e.target.value); $('vCenter').innerText=settings.centerSpeed; save();}); $('gasSens').addEventListener('input',e=>{settings.gasSens=parseInt(e.target.value); $('vGas').innerText=settings.gasSens; save();}); $('brakeSens').addEventListener('input',e=>{settings.brakeSens=parseInt(e.target.value); $('vBrake').innerText=settings.brakeSens; save();}); $('camDist').addEventListener('input',e=>{settings.camDist=parseFloat(e.target.value); $('vCam').innerText=settings.camDist; save();}); $('camH').addEventListener('input',e=>{settings.camH=parseFloat(e.target.value); $('vCamH').innerText=settings.camH; save();}); $('togInvert').addEventListener('click',function(){settings.invert=settings.invert?0:1; this.classList.toggle('on',!!settings.invert); save();}); $('togSwap').addEventListener('click',function(){settings.swap=settings.swap?0:1; this.classList.toggle('on',!!settings.swap); applySettings(); save();}); document.querySelectorAll('[data-size]').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('[data-size]').forEach(x=>x.classList.remove('active')); b.classList.add('active'); settings.steerSize=parseInt(b.dataset.size); applySettings(); save();});}); document.querySelectorAll('[data-pos]').forEach(b=>{b.addEventListener('click',()=>{document.querySelectorAll('[data-pos]').forEach(x=>x.classList.remove('active')); b.classList.add('active'); settings.steerPos=b.dataset.pos; applySettings(); save();});}); $('btnReset').addEventListener('click',()=>{localStorage.removeItem('tb_settings'); location.reload();}); $('btnEditPos').addEventListener('click',()=>{editingPos=!editingPos; if(editingPos){$('btnEditPos').innerText='SELESAI ✓'; document.getElementById('gameUI').style.display='block'; document.getElementById('lobby').style.display='none'; document.getElementById('back').style.display='block'; playing=false; if(!scene){init(); setupControls();} createArena('city');} else {$('btnEditPos').innerText='EDIT POSISI'; save();}});}
+setupSettings();
 window.addEventListener('resize',()=>{if(camera&&renderer){camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight)}});
 </script>
 </body>
