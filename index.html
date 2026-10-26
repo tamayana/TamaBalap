@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>PONTIANAK ONLINE DRIFT</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#000;color:#fff;font-family:monospace;display:flex;justify-content:center;align-items:center;min-height:100vh}
+#wrap{width:400px;height:720px;position:relative;border:3px solid #fff;overflow:hidden;background:#08110a}
+#mapBg{position:absolute;width:100%;height:100%;object-fit:cover;opacity:0.88}
+#player{width:44px;height:72px;background:#00ff88;position:absolute;bottom:80px;left:178px;border-radius:10px;z-index:10;box-shadow:0 0 20px #00ff88;border:2px solid #fff}
+.car{width:40px;height:68px;position:absolute;border-radius:8px;z-index:5;border:2px solid #000}
+#hud{position:absolute;top:0;left:0;right:0;z-index:20;background:linear-gradient(180deg,rgba(0,0,0,0.95),transparent);padding:12px;display:flex;justify-content:space-between;font-size:11px}
+#nitroBar{width:110px;height:12px;background:#222;border:2px solid #fff;border-radius:6px;overflow:hidden}
+#nitroFill{height:100%;width:100%;background:linear-gradient(90deg,#00d5ff,#00ff88)}
+#bottomHud{position:absolute;bottom:0;left:0;right:0;z-index:20;background:linear-gradient(0deg,rgba(0,0,0,0.95),transparent);padding:10px;display:flex;justify-content:space-between}
+.btn{width:64px;height:64px;border-radius:50%;border:2px solid #fff;display:flex;justify-content:center;align-items:center;font-weight:bold}
+#leaderBtn{position:absolute;top:65px;right:8px;z-index:21;background:#00ff88;color:#000;padding:6px 10px;font-size:11px;cursor:pointer;font-weight:bold;border-radius:4px}
+#shareBtn{position:absolute;top:65px;left:8px;z-index:21;background:#00d5ff;color:#000;padding:6px 10px;font-size:11px;cursor:pointer;font-weight:bold;border-radius:4px}
+#leaderboard{position:absolute;top:0;left:0;right:0;bottom:0;z-index:50;background:rgba(0,0,0,0.94);display:none;flex-direction:column;padding:18px;overflow:auto}
+.lbRow{display:flex;justify-content:space-between;padding:7px;border-bottom:1px solid #333;font-size:13px}
+.gold{color:#ffd700;font-weight:bold}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+</head>
+<body>
+<div id="wrap">
+<img id="mapBg" src="pontianak-map.jpg">
+<div id="hud"><div>SCORE:<span id="score">0</span><br>LAP:<span id="lap">1/3</span><br><span id="speed">120 KM/H</span><br>ROOM:<span id="roomName">ptk</span></div><div>NITRO<div id="nitroBar"><div id="nitroFill"></div></div><span id="nitroText">100%</span></div></div>
+<div id="shareBtn" onclick="shareLink()">🔗 SHARE</div>
+<div id="leaderBtn" onclick="toggleLB()">🏆 ONLINE TOP</div>
+<div id="player"></div>
+<div id="bottomHud"><div class="btn" id="brakeBtn">BRAKE</div><div class="btn" id="nitroBtn">NITRO</div></div>
+
+<div id="leaderboard">
+<h2>🏆 ONLINE - PONTIANAK</h2><small id="roomInfo">Room: ptk</small>
+<div id="lbList" style="margin-top:12px"></div>
+<input id="nameInput" placeholder="Nama Pontianak lu" style="margin-top:14px;padding:10px;background:#111;color:#fff;border:1px solid #fff;width:100%">
+<button onclick="saveOnline()" style="margin-top:8px;padding:10px;background:#00ff88;color:#000;font-weight:bold;border:none;width:100%">SIMPAN KE ONLINE</button>
+<button onclick="toggleLB()" style="margin-top:8px;padding:8px;background:transparent;color:#fff;border:1px solid #fff;width:100%">LANJUT BALAP</button>
+</div>
+</div>
+
+<script>
+// ==== GANTI INI DENGAN CONFIG FIREBASE LU ====
+const firebaseConfig = {
+  apiKey: "GANTI_API_KEY_LU",
+  authDomain: "pontianak-drift.firebaseapp.com",
+  databaseURL: "https://pontianak-drift-default-rtdb.firebaseio.com",
+  projectId: "pontianak-drift",
+  appId: "1:xxxxx:web:xxxxx"
+};
+// ==============================================
+let db=null; try{firebase.initializeApp(firebaseConfig); db=firebase.database();}catch(e){console.log('Firebase belum diisi, pakai offline mode');}
+
+const urlParams=new URLSearchParams(window.location.search);
+const room=urlParams.get('room')||'pontianak-khatulistiwa';
+document.getElementById('roomName').textContent=room;
+document.getElementById('roomInfo').textContent='Room: '+room+' | Share link ini ke teman';
+
+const wrap=document.getElementById('wrap'), player=document.getElementById('player');
+const scoreEl=document.getElementById('score'), lapEl=document.getElementById('lap'), speedEl=document.getElementById('speed');
+const nitroFill=document.getElementById('nitroFill'), nitroText=document.getElementById('nitroText'), lb=document.getElementById('leaderboard'), lbList=document.getElementById('lbList');
+let x=178, score=0, lap=1, speed=6, base=6, nitro=100, isNitro=false, isBrake=false, cars=[], over=false, last=0;
+const lanes=[20,105,178,260,340];
+let ctx=null; function getA(){if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)(); return ctx;}
+function brong(){try{const c=getA(), o=c.createOscillator(), g=c.createGain(); o.type='sawtooth'; o.frequency.setValueAtTime(150,c.currentTime); o.frequency.exponentialRampToValueAtTime(700,c.currentTime+0.35); g.gain.setValueAtTime(0.4,c.currentTime); g.gain.exponentialRampToValueAtTime(0.01,c.currentTime+0.4); o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime+0.4);}catch(e){}}
+function spawn(){if(cars.length>6) return; const el=document.createElement('div'); el.className='car'; el.style.background=['#ff0033','#ffaa00','#0055ff','#00ff88'][Math.floor(Math.random()*4)]; el.style.left=lanes[Math.floor(Math.random()*5)]+'px'; el.style.top='-80px'; wrap.appendChild(el); cars.push({el,y:-80});}
+function toggleLB(){lb.style.display=lb.style.display==='flex'?'none':'flex'; if(lb.style.display==='flex') loadOnlineLB();}
+function shareLink(){const link=window.location.origin+window.location.pathname+'?room='+room; navigator.clipboard.writeText(link).then(()=>alert('Link room tercopy!\n'+link+'\nKirim ke teman Pontianak!')).catch(()=>prompt('Copy link ini:',link));}
+function saveOnline(){
+  const name=document.getElementById('nameInput').value||'Anak PTK';
+  last=Math.max(last,score);
+  if(db){db.ref('rooms/'+room).push({name, score:last, time:Date.now()});}
+  const offline=JSON.parse(localStorage.getItem('ptkLB')||'[]'); offline.push({name, score:last}); localStorage.setItem('ptkLB',JSON.stringify(offline));
+  document.getElementById('nameInput').value=''; alert('Score online tersimpan!'); loadOnlineLB();
+}
+function loadOnlineLB(){
+  if(!db){ // fallback offline
+    const d=JSON.parse(localStorage.getItem('ptkLB')||'[]').sort((a,b)=>b.score-a.score).slice(0,10);
+    lbList.innerHTML=d.map((r,i)=>`<div class="lbRow ${i==0?'gold':''}"><span>${i+1}. ${r.name}</span><span>${r.score}</span></div>`).join('')||'Belum ada';
+    return;
+  }
+  db.ref('rooms/'+room).orderByChild('score').limitToLast(10).once('value',snap=>{
+    const arr=[]; snap.forEach(c=>arr.push(c.val())); arr.sort((a,b)=>b.score-a.score);
+    lbList.innerHTML=arr.map((r,i)=>`<div class="lbRow ${i==0?'gold':''}"><span>${i+1}. ${r.name}</span><span>${r.score}</span></div>`).join('')||'Belum ada pembalap di room ini, jadi yang pertama!';
+  });
+}
+function reset(){score=0; lap=1; nitro=100; cars.forEach(c=>c.el.remove()); cars=[]; over=false; x=178; player.style.left=x+'px'; requestAnimationFrame(loop);}
+function loop(){
+ if(over) return; score++; scoreEl.textContent=score;
+ if(score%900===0){lap++; lapEl.textContent=lap+'/3'; if(lap>3){last=score; over=true; lb.style.display='flex'; loadOnlineLB(); return;}}
+ if(isNitro&&nitro>0){speed=base+10; nitro-=1.8; speedEl.textContent='240 KM/H GACOR!!'; speedEl.style.color='#00ff88';}
+ else if(isBrake){speed=Math.max(2,base-3); speedEl.textContent='60 KM/H REM'; speedEl.style.color='#ffaa00'; if(nitro<100) nitro+=0.2;}
+ else{speed=base+score/1000; speedEl.textContent=Math.floor(100+speed*18)+' KM/H'; speedEl.style.color='#fff'; if(nitro<100) nitro+=0.5;}
+ nitro=Math.max(0,Math.min(100,nitro)); nitroFill.style.width=nitro+'%'; nitroText.textContent=Math.floor(nitro)+'%';
+ if(Math.random()<0.055) spawn();
+ for(let i=cars.length-1;i>=0;i--){const c=cars[i]; c.y+=speed; c.el.style.top=c.y+'px'; if(c.y>580&&c.y<680&&Math.abs(parseInt(c.el.style.left)-x)<34){brong(); last=score; over=true; setTimeout(()=>{lb.style.display='flex'; loadOnlineLB();},200); return;} if(c.y>760){c.el.remove(); cars.splice(i,1);}}
+ requestAnimationFrame(loop);
+}
+document.addEventListener('keydown',e=>{if(e.key==='a'||e.key==='ArrowLeft') x=Math.max(10,x-32); if(e.key==='d'||e.key==='ArrowRight') x=Math.min(346,x+32); if(e.code==='Space'){isNitro=true; brong();} if(e.code==='KeyS') isBrake=true; player.style.left=x+'px';});
+document.addEventListener('keyup',e=>{if(e.code==='Space') isNitro=false; if(e.code==='KeyS') isBrake=false;});
+wrap.addEventListener('touchmove',e=>{x=Math.min(346,Math.max(10,e.touches[0].clientX-wrap.getBoundingClientRect().left-22)); player.style.left=x+'px';},{passive:false});
+document.getElementById('nitroBtn').addEventListener('touchstart',e=>{e.preventDefault(); isNitro=true; brong();}); document.getElementById('nitroBtn').addEventListener('touchend',()=>isNitro=false);
+document.getElementById('brakeBtn').addEventListener('touchstart',e=>{e.preventDefault(); isBrake=true;}); document.getElementById('brakeBtn').addEventListener('touchend',()=>isBrake=false);
+loop();
+</script>
+</body>
+</html>
