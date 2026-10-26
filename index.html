@@ -1,98 +1,156 @@
 <!DOCTYPE html>
-<html>
+<html lang="id">
 <head>
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>TamaBalap - Pontianak Racing</title>
+<title>TamaBalap 3D - Pontianak</title>
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;touch-action:none}
-body{background:#000;overflow:hidden;font-family:sans-serif}
-#game{position:relative;width:100vw;height:100vh;background:url('pontianak-map.jpg') no-repeat center/cover}
-canvas{position:absolute;top:0;left:0;width:100%;height:100%}
-#hud{position:absolute;top:10px;left:10px;color:#fff;background:rgba(0,0,0,.7);padding:8px 12px;border-radius:10px;font-size:13px;z-index:10;line-height:1.5}
-#controls{position:absolute;bottom:0;width:100%;display:flex;justify-content:space-between;padding:20px;z-index:10}
-.btn{width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.15);border:2px solid #fff;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;backdrop-filter:blur(5px)}
-.btn:active{background:rgba(255,255,0,.6)}
-#nitro{border-color:#0ff}
-#steer{position:absolute;bottom:120px;width:100%;display:flex;justify-content:space-between;padding:0 40px}
-.s-btn{width:70px;height:70px;border-radius:15px;background:rgba(255,255,255,.1);border:1px solid #fff;color:#fff;font-size:24px}
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif}
+body{background:#0a0e14;overflow:hidden;color:#fff;touch-action:none}
+#lobby{position:absolute;inset:0;z-index:10;background:radial-gradient(circle at center,#1a2a40 0%,#060a0f 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+#lobby h1{font-size:42px;letter-spacing:4px;text-shadow:0 0 20px #00f2ff;margin-bottom:5px}
+#lobby p{opacity:.6;margin-bottom:30px}
+.arenas{display:grid;grid-template-columns:1fr;gap:16px;width:100%;max-width:400px}
+.arena-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:18px;padding:16px;display:flex;gap:14px;align-items:center;cursor:pointer;transition:.2s;backdrop-filter:blur(10px)}
+.arena-card:active{transform:scale(.97);background:rgba(0,242,255,.15);border-color:#00f2ff}
+.arena-card img{width:78px;height:58px;border-radius:10px;object-fit:cover;background:#222}
+.arena-info h3{font-size:16px;margin-bottom:2px}
+.arena-info span{font-size:12px;opacity:.7}
+.badge{margin-left:auto;background:#00f2ff;color:#000;font-size:10px;font-weight:800;padding:4px 8px;border-radius:20px}
+#hud{position:absolute;top:0;left:0;right:0;padding:12px 14px;display:flex;justify-content:space-between;z-index:5;pointer-events:none}
+.hud-box{background:rgba(0,0,0,.55);border:1px solid rgba(255,255,255,.15);padding:8px 14px;border-radius:12px;font-size:13px;backdrop-filter:blur(8px)}
+#controls{position:absolute;bottom:0;left:0;right:0;padding:16px;display:none;justify-content:space-between;z-index:5}
+.ctrl{width:78px;height:78px;border-radius:50%;background:rgba(255,255,255,.08);border:2px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;backdrop-filter:blur(6px);user-select:none}
+.ctrl:active{background:rgba(0,242,255,.3)}
+#steer{position:absolute;bottom:110px;left:0;right:0;display:none;justify-content:space-between;padding:0 20px;z-index:5}
+.s{width:70px;height:70px;border-radius:16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:22px}
+#nitroBar{position:absolute;top:68px;right:14px;width:140px;height:8px;background:rgba(255,255,255,.15);border-radius:10px;overflow:hidden;z-index:5}
+#nitroFill{height:100%;width:100%;background:linear-gradient(90deg,#00f2ff,#7000ff);transition:width .1s}
+#back{position:absolute;top:14px;left:14px;z-index:6;display:none;background:rgba(0,0,0,.6);border:1px solid #fff;padding:8px 14px;border-radius:10px}
 </style>
 </head>
 <body>
-<div id="game">
-<div id="hud">SCORE: <span id="score">0</span><br>LAP: <span id="lap">1/3</span><br><span id="speed">0 KM/H</span></div>
-<canvas id="c"></canvas>
-<div id="steer"><button class="s-btn" id="left">◀</button><button class="s-btn" id="right">▶</button></div>
-<div id="controls"><div class="btn" id="brake">BRAKE</div><div class="btn" id="nitro">NITRO</div></div>
+<div id="lobby">
+<h1>TAMABALAP</h1>
+<p>PONTIANAK 3D DRIFT • PILIH ARENA</p>
+<div class="arenas">
+<div class="arena-card" data-arena="kapuas"><img src="https://images.unsplash.com/photo-1545558014-8692077e9b5c?w=200"><div class="arena-info"><h3>ARENA A: JEMBATAN KAPUAS</h3><span>Sungai • Jembatan Panjang • 3.2KM</span></div><div class="badge">DRIFT</div></div>
+<div class="arena-card" data-arena="khatulistiwa"><img src="https://images.unsplash.com/photo-1519817650390-64a93db51149?w=200"><div class="arena-info"><h3>ARENA B: TUGU KHATULISTIWA</h3><span>Equator 0° • Lingkaran • Speed</span></div><div class="badge">SPEED</div></div>
+<div class="arena-card" data-arena="ayani"><img src="https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=200"><div class="arena-info"><h3>ARENA C: A. YANI NIGHT</h3><span>Pasar • Masjid Raya • Technical</span></div><div class="badge">NIGHT</div></div>
 </div>
-<script>
-const canvas=document.getElementById('c'), ctx=canvas.getContext('2d');
-function resize(){canvas.width=innerWidth;canvas.height=innerHeight} resize(); window.onresize=resize;
-
-let keys={}, car={x:innerWidth/2,y:innerHeight*0.85,angle:-Math.PI/2,speed:0,max:6,drift:0}, lap=1, score=0, nitro=100;
-
-const left=document.getElementById('left'), right=document.getElementById('right'), brake=document.getElementById('brake'), nitroBtn=document.getElementById('nitro');
-
-left.ontouchstart=()=>keys.l=true; left.ontouchend=()=>keys.l=false;
-right.ontouchstart=()=>keys.r=true; right.ontouchend=()=>keys.r=false;
-brake.ontouchstart=()=>keys.b=true; brake.ontouchend=()=>keys.b=false;
-nitroBtn.ontouchstart=()=>keys.n=true; nitroBtn.ontouchend=()=>keys.n=false;
-
-window.onkeydown=e=>{if(e.key=='a'||e.key=='ArrowLeft')keys.l=true; if(e.key=='d'||e.key=='ArrowRight')keys.r=true; if(e.key==' ')keys.b=true; if(e.key=='Shift')keys.n=true}
-window.onkeyup=e=>{if(e.key=='a'||e.key=='ArrowLeft')keys.l=false; if(e.key=='d'||e.key=='ArrowRight')keys.r=false; if(e.key==' ')keys.b=false; if(e.key=='Shift')keys.n=false}
-
-function update(){
-  let acc = 0.15;
-  if(keys.n && nitro>0){acc=0.35; nitro-=0.8; car.max=9}else{car.max=6; if(nitro<100)nitro+=0.2}
-  if(keys.b){car.speed*=0.95}else{car.speed+=acc; if(car.speed>car.max)car.speed=car.max}
-  if(!keys.b && !keys.n)car.speed*=0.99;
-  
-  if(keys.l)car.angle-=0.06 * (car.speed/3);
-  if(keys.r)car.angle+=0.06 * (car.speed/3);
-  
-  car.x+=Math.cos(car.angle)*car.speed;
-  car.y+=Math.sin(car.angle)*car.speed;
-  
-  // batas map
-  if(car.x<0)car.x=0; if(car.x>innerWidth)car.x=innerWidth;
-  if(car.y<0)car.y=0; if(car.y>innerHeight)car.y=innerHeight;
-  
-  score+=Math.floor(car.speed);
-  document.getElementById('score').innerText=score;
-  document.getElementById('speed').innerText=Math.floor(car.speed*35)+' KM/H';
-  document.getElementById('lap').innerText=lap+'/3';
-  nitroBtn.innerHTML='NITRO<br>'+Math.floor(nitro)+'%';
-  nitroBtn.style.opacity=0.3+nitro/100;
-  
-  // simple lap system - lewat bawah
-  if(car.y>innerHeight*0.8 && car.y<innerHeight*0.9 && Math.abs(car.x-innerWidth/2)<100){
-    // crossing start line
-  }
+</div>
+<div id="hud"><div class="hud-box"><div id="speed">0 KM/H</div><div id="lap">LAP 1/3</div></div><div class="hud-box"><div>ARENA: <span id="arenaName">-</span></div><div>NITRO: <span id="nitroTxt">100%</span></div></div></div>
+<div id="nitroBar"><div id="nitroFill"></div></div>
+<button id="back">← LOBBY</button>
+<div id="steer"><div class="s" id="leftBtn">◀</div><div class="s" id="rightBtn">▶</div></div>
+<div id="controls"><div class="ctrl" id="brakeBtn">BRAKE</div><div class="ctrl" id="gasBtn">GAS</div><div class="ctrl" id="nitroBtn" style="border-color:#00f2ff;color:#00f2ff">NITRO</div></div>
+<script type="module">
+import * as THREE from 'three';
+let scene,camera,renderer,car,ground,clock;
+let arenaType='kapuas',playing=false;
+let speed=0,maxSpeed=28,angle=0,nitro=100,lap=1,drift=0;
+let keys={l:false,r:false,g:false,b:false,n:false};
+let checkpoints=[],nextCp=0;
+const lobby=document.getElementById('lobby');
+const controls=document.getElementById('controls');
+const steer=document.getElementById('steer');
+const back=document.getElementById('back');
+function initThree(){
+ scene=new THREE.Scene();
+ camera=new THREE.PerspectiveCamera(70,innerWidth/innerHeight,0.1,1000);
+ renderer=new THREE.WebGLRenderer({antialias:true});
+ renderer.setSize(innerWidth,innerHeight);
+ renderer.shadowMap.enabled=true;
+ document.body.appendChild(renderer.domElement);
+ clock=new THREE.Clock();
+ scene.fog=new THREE.Fog(0x0a0e14,40,120);
+ const amb=new THREE.AmbientLight(0xffffff,0.6); scene.add(amb);
+ const sun=new THREE.DirectionalLight(0xffffff,1.2); sun.position.set(20,40,20); sun.castShadow=true; scene.add(sun);
+ const carGeo=new THREE.BoxGeometry(1.8,0.8,3.5);
+ const carMat=new THREE.MeshStandardMaterial({color:0x2b8cff,metalness:0.7,roughness:0.2,emissive:0x001133});
+ car=new THREE.Mesh(carGeo,carMat); car.castShadow=true;
+ const cabin=new THREE.Mesh(new THREE.BoxGeometry(1.6,0.6,1.8), new THREE.MeshStandardMaterial({color:0x111111}));
+ cabin.position.y=0.6; car.add(cabin); scene.add(car);
+ camera.position.set(0,10,-12); camera.lookAt(car.position);
+ setupInput(); animate();
 }
-
-function draw(){
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  // mobil player
-  ctx.save();
-  ctx.translate(car.x,car.y);
-  ctx.rotate(car.angle);
-  ctx.fillStyle='#2b8cff'; ctx.shadowColor='#2b8cff'; ctx.shadowBlur=15;
-  ctx.fillRect(-18,-10,36,20);
-  ctx.fillStyle='#fff'; ctx.fillRect(12,-6,6,12);
-  // drift smoke
-  if(keys.b && car.speed>2){
-    ctx.fillStyle='rgba(255,255,255,0.4)';
-    ctx.beginPath(); ctx.arc(-15,0,Math.random()*10,0,Math.PI*2); ctx.fill();
-  }
-  ctx.restore();
-  
-  // bot musuh dummy (merah hijau)
-  const bots=[{x:innerWidth*0.6,y:innerHeight*0.7},{x:innerWidth*0.3,y:innerHeight*0.4}];
-  bots.forEach(b=>{
-    ctx.fillStyle='red'; ctx.fillRect(b.x,b.y,20,30);
-  });
+function createArena(type){
+ const toRemove=[]; scene.traverse(o=>{if(o.userData.track)toRemove.push(o)}); toRemove.forEach(o=>scene.remove(o));
+ checkpoints=[];
+ if(type==='kapuas'){
+   scene.background=new THREE.Color(0x1a3a5a);
+   ground=new THREE.Mesh(new THREE.PlaneGeometry(400,400), new THREE.MeshStandardMaterial({color:0x143a6a}));
+   ground.rotation.x=-Math.PI/2; ground.receiveShadow=true; ground.userData.track=true; scene.add(ground);
+   const river=new THREE.Mesh(new THREE.PlaneGeometry(400,40), new THREE.MeshStandardMaterial({color:0x0a4a8a}));
+   river.rotation.x=-Math.PI/2; river.position.y=0.05; river.userData.track=true; scene.add(river);
+   for(let i=0;i<30;i++){
+     const seg=new THREE.Mesh(new THREE.BoxGeometry(12,0.5,8), new THREE.MeshStandardMaterial({color:i%2?0x333333:0xaaaaaa}));
+     seg.position.set(0,0.6,(i-15)*8); seg.receiveShadow=true; seg.userData.track=true; scene.add(seg);
+     if(i%5===0) checkpoints.push(new THREE.Vector3(0,0.6,(i-15)*8));
+   }
+ } else if(type==='khatulistiwa'){
+   scene.background=new THREE.Color(0x2a3a1a);
+   ground=new THREE.Mesh(new THREE.PlaneGeometry(400,400), new THREE.MeshStandardMaterial({color:0x2a4a1a}));
+   ground.rotation.x=-Math.PI/2; ground.userData.track=true; scene.add(ground);
+   for(let i=0;i<32;i++){
+     const ang=i/32*Math.PI*2; const x=Math.cos(ang)*30, z=Math.sin(ang)*30;
+     const seg=new THREE.Mesh(new THREE.BoxGeometry(10,0.5,4), new THREE.MeshStandardMaterial({color:0xccaa66}));
+     seg.position.set(x,0.5,z); seg.lookAt(0,0.5,0); seg.userData.track=true; scene.add(seg);
+     checkpoints.push(new THREE.Vector3(x,0.5,z));
+   }
+   const tugu=new THREE.Mesh(new THREE.CylinderGeometry(1,2,8,6), new THREE.MeshStandardMaterial({color:0xffffff}));
+   tugu.position.set(0,4,0); tugu.userData.track=true; scene.add(tugu);
+ } else {
+   scene.background=new THREE.Color(0x0f0a1a);
+   ground=new THREE.Mesh(new THREE.PlaneGeometry(400,400), new THREE.MeshStandardMaterial({color:0x1a1a2a}));
+   ground.rotation.x=-Math.PI/2; ground.userData.track=true; scene.add(ground);
+   const path=[ [0,0],[20,0],[20,20],[0,20],[-15,10],[0,0] ];
+   path.forEach((p)=>{
+     const seg=new THREE.Mesh(new THREE.BoxGeometry(10,0.4,10), new THREE.MeshStandardMaterial({color:0x444444,emissive:0x111111}));
+     seg.position.set(p[0],0.3,p[1]); seg.userData.track=true; scene.add(seg);
+     checkpoints.push(new THREE.Vector3(p[0],0.3,p[1]));
+     const b=new THREE.Mesh(new THREE.BoxGeometry(4,8,4), new THREE.MeshStandardMaterial({color:0x222233}));
+     b.position.set(p[0]+8,4,p[1]+5); b.userData.track=true; scene.add(b);
+   });
+ }
+ car.position.set(checkpoints[0]?.x||0,1.5,checkpoints[0]?.z||0);
+ speed=0; angle=0; car.rotation.y=0; nextCp=1; lap=1;
 }
-
-function loop(){update(); draw(); requestAnimationFrame(loop)} loop();
+function setupInput(){
+ const bind=(el,k)=>{el.addEventListener('touchstart',e=>{e.preventDefault(); keys[k]=true}); el.addEventListener('touchend',e=>{keys[k]=false}); el.addEventListener('mousedown',()=>keys[k]=true); el.addEventListener('mouseup',()=>keys[k]=false);};
+ bind(document.getElementById('leftBtn'),'l'); bind(document.getElementById('rightBtn'),'r'); bind(document.getElementById('gasBtn'),'g'); bind(document.getElementById('brakeBtn'),'b'); bind(document.getElementById('nitroBtn'),'n');
+ window.addEventListener('keydown',e=>{if(e.key==='a'||e.key==='ArrowLeft')keys.l=true; if(e.key==='d'||e.key==='ArrowRight')keys.r=true; if(e.key==='w'||e.key==='ArrowUp')keys.g=true; if(e.key==='s'||e.key===' ')keys.b=true; if(e.key==='Shift')keys.n=true;});
+ window.addEventListener('keyup',e=>{if(e.key==='a'||e.key==='ArrowLeft')keys.l=false; if(e.key==='d'||e.key==='ArrowRight')keys.r=false; if(e.key==='w'||e.key==='ArrowUp')keys.g=false; if(e.key==='s'||e.key===' ')keys.b=false; if(e.key==='Shift')keys.n=false;});
+}
+function update(dt){
+ if(!playing) return;
+ let accel=0; if(keys.g) accel+=18*dt; if(keys.n && nitro>0){accel+=28*dt; nitro-=35*dt; maxSpeed=42}else{maxSpeed=28; if(nitro<100)nitro+=10*dt}
+ if(keys.b){speed-=20*dt; if(speed<0)speed=0}
+ speed+=accel; speed-=speed*0.8*dt; if(speed<0)speed=0; if(speed>maxSpeed)speed=maxSpeed;
+ let steerFactor=2.2+(speed/maxSpeed)*1.5; if(keys.b && speed>5) steerFactor+=2.5;
+ if(keys.l) angle+=steerFactor*dt; if(keys.r) angle-=steerFactor*dt;
+ const move=speed*dt; car.position.x+=Math.sin(angle)*move; car.position.z+=Math.cos(angle)*move; car.rotation.y=angle;
+ drift=(keys.l?-1:keys.r?1:0)*(speed/10); car.rotation.z=-drift*0.4; car.rotation.x=(speed/maxSpeed)*0.15;
+ if(checkpoints[nextCp]){const d=car.position.distanceTo(checkpoints[nextCp]); if(d<8){nextCp++; if(nextCp>=checkpoints.length){nextCp=0; lap++;}}}
+ const camTarget=new THREE.Vector3(car.position.x-Math.sin(angle)*12, car.position.y+6, car.position.z-Math.cos(angle)*12);
+ camera.position.lerp(camTarget,4*dt); camera.lookAt(car.position);
+ document.getElementById('speed').innerText=Math.floor(speed*12)+' KM/H';
+ document.getElementById('lap').innerText='LAP '+lap+'/3';
+ document.getElementById('nitroTxt').innerText=Math.floor(nitro)+'%';
+ document.getElementById('nitroFill').style.width=nitro+'%';
+}
+function animate(){requestAnimationFrame(animate); const dt=Math.min(clock.getDelta(),0.05); update(dt); renderer.render(scene,camera);}
+document.querySelectorAll('.arena-card').forEach(card=>{
+ card.addEventListener('click',()=>{
+   arenaType=card.dataset.arena;
+   document.getElementById('arenaName').innerText=arenaType.toUpperCase();
+   lobby.style.display='none'; controls.style.display='flex'; steer.style.display='flex'; back.style.display='block'; playing=true;
+   if(!scene) initThree(); createArena(arenaType);
+ });
+});
+back.onclick=()=>{playing=false; lobby.style.display='flex'; controls.style.display='none'; steer.style.display='none'; back.style.display='none'};
+window.addEventListener('resize',()=>{if(camera&&renderer){camera.aspect=innerWidth/innerHeight; camera.updateProjectionMatrix(); renderer.setSize(innerWidth,innerHeight)}});
 </script>
 </body>
 </html>
